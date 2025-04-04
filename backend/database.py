@@ -2,7 +2,8 @@ from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 from .models import Base
 
-DATABASE_URL = "sqlite:///:memory:"
+DATABASE_URL = "sqlite:///./database.sqlite3"
+
 
 
 
