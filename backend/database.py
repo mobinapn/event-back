@@ -2,7 +2,8 @@ from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 from .models import Base
 
-DATABASE_URL = "mysql+pymysql://root:Mobina26081381@localhost:3306/event_db"
+DATABASE_URL=sqlite:///:memory:
+
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
