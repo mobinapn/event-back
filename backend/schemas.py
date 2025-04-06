@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional, Union
+from datetime import date
 
 
 class Token(BaseModel):
@@ -82,7 +84,7 @@ class PassengerResponse(BaseModel):
     firstname: str
     lastname: str
     gender: int
-    dob: datetime
+    dob: Union[str, date]
     national_code: str
 
     class Config:

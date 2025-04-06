@@ -7,6 +7,47 @@ from ..models import User, Reservation, Wallet, Passenger, Event
 from ..schemas import UserProfileResponse, ReservationResponse, WalletResponse, PassengerResponse
 from ..auth.auth_handler import get_current_user
 
+def parse_flexible_date(date_string):
+    """
+    Parse date string in various formats and return a datetime.date object
+    """
+    if not date_string:
+        return None
+        
+    # Try standard formats
+    formats = [
+        "%Y-%m-%d",       # 2023-04-21
+        "%d-%m-%Y",       # 21-04-2023
+        "%d/%m/%Y",       # 21/04/2023
+        "%m/%d/%Y",       # 04/21/2023
+        "%d.%m.%Y",       # 21.04.2023
+        "%B %d, %Y",      # April 21, 2023
+        "%d %B %Y",       # 21 April 2023
+    ]
+    
+    for fmt in formats:
+        try:
+            return datetime.strptime(date_string, fmt).date()
+        except ValueError:
+            continue
+            
+    # Try to extract numbers using regex
+    import re
+    if re.match(r"^\d{1,2}[/-\.]\d{1,2}[/-\.]\d{2,4}$", date_string):
+        parts = re.split(r"[/-\.]", date_string)
+        # Try different arrangements of the parts
+        try:
+            if len(parts[2]) == 2:  # Handle two-digit years
+                parts[2] = "20" + parts[2] if int(parts[2]) < 50 else "19" + parts[2]
+            return datetime(int(parts[2]), int(parts[1]), int(parts[0])).date()
+        except ValueError:
+            try:
+                return datetime(int(parts[2]), int(parts[0]), int(parts[1])).date()
+            except ValueError:
+                pass
+                
+    raise ValueError(f"Could not parse date: {date_string}")
+
 router = APIRouter()
 
 
@@ -149,20 +190,29 @@ def add_passenger(
         db: Session = Depends(get_db),
         current_user: User = Depends(get_current_user)
 ):
-    new_passenger = Passenger(
-        user_id=current_user.id,
-        firstname=passenger_data.firstname,
-        lastname=passenger_data.lastname,
-        gender=passenger_data.gender,
-        dob=passenger_data.dob,
-        national_code=passenger_data.national_code
-    )
+    try:
+        # If passenger_data.dob is a string, parse it; if it's already a date, use it as is
+        dob = passenger_data.dob
+        if isinstance(dob, str):
+            dob = parse_flexible_date(dob)
+            
+        new_passenger = Passenger(
+            user_id=current_user.id,
+            firstname=passenger_data.firstname,
+            lastname=passenger_data.lastname,
+            gender=passenger_data.gender,
+            dob=dob,  # Use the parsed date
+            national_code=passenger_data.national_code
+        )
 
-    db.add(new_passenger)
-    db.commit()
-    db.refresh(new_passenger)  # id به طور خودکار تولید می‌شود
-    return new_passenger
-
+        db.add(new_passenger)
+        db.commit()
+        db.refresh(new_passenger)
+        return new_passenger
+        
+    except ValueError as e:
+        # Handle invalid date error
+        raise HTTPException(status_code=400, detail=f"Invalid date format: {str(e)}")
 
 @router.delete("/passengers/{passenger_id}")
 def delete_passenger(passenger_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
