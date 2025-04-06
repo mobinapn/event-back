@@ -28,7 +28,7 @@ class User(Base):
 class Passenger(Base):
     __tablename__ = "passengers"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True , nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     firstname = Column(String(50), nullable=False)
     lastname = Column(String(50), nullable=False)
