@@ -12,7 +12,7 @@ app = FastAPI(debug=True)
 
 origins = [
     "http://localhost:9000",
-    "https://event-front-tq88-pteq931x4-mobinapns-projects.vercel.app/"
+    "https://event-management-airbnb.vercel.app"
 ]
 
 app.add_middleware(
