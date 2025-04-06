@@ -33,7 +33,7 @@ class Passenger(Base):
     firstname = Column(String(50), nullable=False)
     lastname = Column(String(50), nullable=False)
     gender = Column(Integer, nullable=False)
-    dob = Column(Date, nullable=False)
+    dob = Column(Date, nullable=True)
     national_code = Column(String(10), index=True, nullable=False)
 
     user = relationship("User", back_populates="passengers")
