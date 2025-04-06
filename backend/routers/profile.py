@@ -160,7 +160,7 @@ def add_passenger(
 
     db.add(new_passenger)
     db.commit()
-    db.refresh(new_passenger)
+    db.refresh(new_passenger)  # id به طور خودکار تولید می‌شود
     return new_passenger
 
 
